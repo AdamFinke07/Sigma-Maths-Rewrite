@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>800</width>
+    <height>755</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <widget class="QLabel" name="Logo">
+    <property name="geometry">
+     <rect>
+      <x>30</x>
+      <y>30</y>
+      <width>731</width>
+      <height>251</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="pixmap">
+     <pixmap>logo.png</pixmap>
+    </property>
+    <property name="scaledContents">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="PBPractice">
+    <property name="geometry">
+     <rect>
+      <x>30</x>
+      <y>320</y>
+      <width>341</width>
+      <height>121</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Practice</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="PBSpeedrun">
+    <property name="geometry">
+     <rect>
+      <x>410</x>
+      <y>320</y>
+      <width>351</width>
+      <height>121</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Speedrun</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="PBExamMode">
+    <property name="geometry">
+     <rect>
+      <x>410</x>
+      <y>460</y>
+      <width>351</width>
+      <height>121</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Exam Mode</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="PBStatistics">
+    <property name="geometry">
+     <rect>
+      <x>30</x>
+      <y>460</y>
+      <width>341</width>
+      <height>121</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Statistics</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="PBSettings">
+    <property name="geometry">
+     <rect>
+      <x>30</x>
+      <y>600</y>
+      <width>731</width>
+      <height>51</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Settings</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="PBQuit">
+    <property name="geometry">
+     <rect>
+      <x>30</x>
+      <y>670</y>
+      <width>731</width>
+      <height>51</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Quit</string>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
