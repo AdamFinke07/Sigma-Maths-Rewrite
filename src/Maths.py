@@ -47,6 +47,31 @@ def primefactors(n):
         factors.append(n)
     return factors
 
+def dijkstra(graph, start):
+    distances = {node: float('infinity') for node in graph}
+    distances[start] = 0
+    paths = {node: [] for node in graph}
+    paths[start] = [start]
+    unvisited = set(graph.keys())
+    
+    while unvisited:
+        current = min(unvisited, key=lambda node: distances[node])
+        
+        if distances[current] == float('infinity'):
+            break
+            
+        unvisited.remove(current)
+        
+        for neighbor, weight in graph[current].items():
+            if neighbor in unvisited:
+                new_distance = distances[current] + weight
                 
+                if new_distance < distances[neighbor]:
+                    distances[neighbor] = new_distance
+                    paths[neighbor] = paths[current] + [neighbor]
+    
+    return distances, paths
+
+
 
 
