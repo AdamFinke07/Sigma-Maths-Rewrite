@@ -47,7 +47,7 @@ def primefactors(n):
         factors.append(n)
     return factors
 
-def dijkstra(graph, start):
+def dijkstra(graph, start, end):
     distances = {node: float('infinity') for node in graph}
     distances[start] = 0
     paths = {node: [] for node in graph}
@@ -70,7 +70,10 @@ def dijkstra(graph, start):
                     distances[neighbor] = new_distance
                     paths[neighbor] = paths[current] + [neighbor]
     
-    return distances, paths
+    path_string = ''.join(paths[end])
+    distance = int(distances[end])
+    
+    return path_string, distance
 
 
 
