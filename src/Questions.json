@@ -1,0 +1,23 @@
+{
+    "questions": {
+        "Trig": {
+            "1": {
+                "image": "Trig1.png",
+                "fontsize": 15,
+                "variables": [
+                    {"name": "n1", "type": "random", "max": 6, "min": 1},
+                    {"name": "n2", "type": "random", "max": 6, "min": 1}
+                ],
+                "positions": [
+                    [104, 6, "n1"],
+                    [165, 6, "n2"]
+                ],
+                "answer": [
+                    {"calc": "function", "funcname": "Maths.Rcos", "input": ["n1", "n2"], "output": ["R", "a"]},
+                    {"calc": "function", "funcname": "round", "input": ["a", 3], "output": ["a"]},
+                    {"calc": "answer", "type": "fstring", "output": "{R}cos(x + {a})"}
+                ]
+            }
+        }
+    }
+}
