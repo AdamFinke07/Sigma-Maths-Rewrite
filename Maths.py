@@ -75,6 +75,23 @@ def dijkstra(graph, start, end):
     
     return path_string, distance
 
+def integrate(coefficients, lower_limit, upper_limit):
+    coeffs = coefficients[::-1]
+    
+    # Calculate the integral at upper limit
+    upper_result = 0
+    for i, coeff in enumerate(coeffs):
+        power = i + 1
+        upper_result += coeff * (upper_limit ** power) / power
+    
+    # Calculate the integral at lower limit
+    lower_result = 0
+    for i, coeff in enumerate(coeffs):
+        power = i + 1
+        lower_result += coeff * (lower_limit ** power) / power
+    
+    # Return the definite integral
+    return upper_result - lower_result
 
 
 

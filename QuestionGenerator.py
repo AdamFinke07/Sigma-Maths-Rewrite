@@ -4,6 +4,9 @@ from PIL import ImageFont
 import random
 import Maths
 import math
+import json
+import matplotlib.pyplot as plt
+import numpy as np
 
 def question1(): 
     n1 = random.randint(1,6)
@@ -96,10 +99,137 @@ def generate_image(image, fontsize, *pos):
     img.show()
     img.save('edited.png')
 
+def generate_question(question_id):
+    # Load and parse questions.json
+    with open('Questions/questions.json') as f:
+        questions = json.load(f)['questions']
+    
+    # Find the question data
+    for category in questions:
+        if question_id in questions[category]:
+            question = questions[category][question_id]
+            break
+    else:
+        raise ValueError(f"Question {question_id} not found")
 
+    # Generate random variables
+    variables = {}
+    for var in question['variables']:
+        if var['type'] == 'random':
+            variables[var['name']] = random.randint(var['min'], var['max'])
+    
+    # Calculate answer
+    answer_steps = question['answer']
+    for step in answer_steps:
+        if step['calc'] == 'function':
+            # Get function inputs
+            inputs = [variables[x] if x in variables else x for x in step['input']]
+            
+            # Call function
+            if step['funcname'].startswith('Maths.'):
+                func = getattr(Maths, step['funcname'].split('.')[1])
+            else:
+                func = globals()[step['funcname']]
+            
+            # Store outputs
+            results = func(*inputs)
+            if not isinstance(results, tuple):
+                results = (results,)
+            for var, result in zip(step['output'], results):
+                variables[var] = result
+                
+        elif step['calc'] == 'answer':
+            if step['type'] == 'fstring':
+                final_answer = step['output'].format(**variables)
 
+    # Generate image
+    img = Image.open(f"Questions/{question['image']}")
+    imgfont = ImageFont.truetype('Fonts/OpenSans-Medium.ttf', question['fontsize'])
+    imgdraw = ImageDraw.Draw(img)
+    
+    # Add text to positions
+    for pos in question['positions']:
+        x, y, var = pos
+        value = variables[var]
+        imgdraw.text((x, y), str(value), font=imgfont, fill=(0, 0, 0))
+    
+    img.show()
+    img.save('edited.png')
+    
+    return final_answer
 
-a, b = question3()
-print(a, b)
-
+def generate_quadratic_graph():
+    # Generate random coefficients (all integers)
+    a = random.randint(1, 5)  # Ensure a is positive
+    b = random.randint(-10, 10)
+    c = random.randint(0, 20)  # Start with positive c
+    
+    # Create x values for the full curve
+    x_full = np.linspace(-10, 10, 400)
+    y_full = a * x_full**2 + b * x_full + c
+    
+    # Check if the minimum value is below 0
+    min_y = min(y_full)
+    if min_y < 0:
+        # Shift the function up by the absolute value of the minimum, rounded up to nearest integer
+        shift = math.ceil(abs(min_y))
+        c += shift
+        y_full = a * x_full**2 + b * x_full + c
+    
+    # Create x values for the shaded region
+    x_shade = np.linspace(0, 2, 100)
+    y_shade = a * x_shade**2 + b * x_shade + c
+    
+    # Create the plot
+    plt.figure(figsize=(8, 6))
+    
+    # Plot the full curve
+    plt.plot(x_full, y_full, 'b-', linewidth=2)
+    
+    # Fill the area under the curve between x=0 and x=2
+    plt.fill_between(x_shade, y_shade, 0, 
+                    color='blue', alpha=0.3)
+    
+    # Add grid and axes
+    plt.grid(True, linestyle='--', alpha=0.7)
+    plt.axhline(y=0, color='k', linestyle='-', linewidth=1)
+    plt.axvline(x=0, color='k', linestyle='-', linewidth=1)
+    
+    # Add vertical lines at integration limits that stop at the curve
+    y_at_0 = a * 0**2 + b * 0 + c
+    y_at_2 = a * 2**2 + b * 2 + c
+    
+    plt.plot([0, 0], [0, y_at_0], 'g--', linewidth=2)
+    plt.plot([2, 2], [0, y_at_2], 'g--', linewidth=2)
+    
+    # Set axis limits and ticks
+    plt.xlim(-10, 10)
+    plt.xticks(range(-10, 11, 2))
+    
+    y_max = math.ceil(max(y_full))
+    plt.ylim(0, y_max)
+    
+    # Calculate step size to show at most 10 numbers
+    step = max(1, math.ceil(y_max / 10))
+    plt.yticks(range(0, y_max + 1, step))
+    
+    # Remove all labels and titles except integration limits
+    plt.xticks([])
+    plt.yticks([])
+    plt.xlabel('')
+    plt.ylabel('')
+    plt.title('')
+    
+    # Add labels for integration limits
+    plt.text(0, -0.5, '0', ha='center', va='top')
+    plt.text(2, -0.5, '2', ha='center', va='top')
+    
+    # Save the plot
+    plt.savefig('graph.png', dpi=300, bbox_inches='tight')
+    plt.close()
+    
+    return a, b, c, Maths.integrate([a, b, c], 0, 2)
+  
+a, b, c, integral = generate_quadratic_graph()
+print(a, b, c, integral)
 

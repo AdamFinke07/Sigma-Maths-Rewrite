@@ -1,23 +1,97 @@
 {
     "questions": {
-        "Trig": {
-            "1": {
-                "image": "Trig1.png",
-                "fontsize": 15,
-                "variables": [
-                    {"name": "n1", "type": "random", "max": 6, "min": 1},
-                    {"name": "n2", "type": "random", "max": 6, "min": 1}
-                ],
-                "positions": [
-                    [104, 6, "n1"],
-                    [165, 6, "n2"]
-                ],
-                "answer": [
-                    {"calc": "function", "funcname": "Maths.Rcos", "input": ["n1", "n2"], "output": ["R", "a"]},
-                    {"calc": "function", "funcname": "round", "input": ["a", 3], "output": ["a"]},
-                    {"calc": "answer", "type": "fstring", "output": "{R}cos(x + {a})"}
-                ]
-            }
+        "1": {
+            "topic": "Trig",
+            "image": "1.png",
+            "fontsize": 15,
+            "variables": [
+                {"name": "n1", "type": "random", "max": 6, "min": 1},
+                {"name": "n2", "type": "random", "max": 6, "min": 1}
+            ],
+            "positions": [
+                [104, 6, "n1"],
+                [165, 6, "n2"]
+            ],
+            "answer": [
+                {"calc": "function", "funcname": "Maths.Rcos", "input": ["n1", "n2"], "output": ["R", "a"]},
+                {"calc": "function", "funcname": "round", "input": ["a", 3], "output": ["a"]},
+                {"calc": "answer", "type": "fstring", "output": "{R}cos(x + {a})"}
+            ]
+        },
+        "2": {
+            "topic": "Logarithm",
+            "image": "2.png",
+            "fontsize": 15,
+            "variables": [
+                {"name": "n1", "type": "random", "max": 2020, "min": 2000},
+                {"name": "n2", "type": "random", "max": 15, "min": 1},
+                {"name": "n3", "type": "random", "max": 99, "min": 30},
+                {"name": "n4", "type": "random", "max": "n3-5", "min": 10},
+                {"name": "n5", "type": "random", "max": "n3-1", "min": "max(n3-n4+1,n4+1)"}
+            ],
+            "positions": [
+                [345, 54, "n1"],
+                [595, 179, "n1"],
+                [178, 345, "n2"],
+                [425, 136, "n3"],
+                [464, 136, "n4"],
+                [310, 344, "n5"]
+            ],
+            "answer": [
+                {"calc": "function", "funcname": "int", "input": ["n3-n4"], "output": ["a"]},
+                {"calc": "function", "funcname": "math.log", "input": ["(n3-n5)/n4"], "output": ["log_result"]},
+                {"calc": "function", "funcname": "round", "input": ["log_result/(n2-n1)", "-int(math.floor(math.log10(abs(log_result/(n2-n1)))))+2"], "output": ["b"]},
+                {"calc": "answer", "type": "tuple", "output": ["a", "b"]}
+            ]
+        },
+        "3": {
+            "topic": "Graph",
+            "image": "3.png",
+            "fontsize": 15,
+            "variables": [
+                {"name": "AB", "type": "random", "max": 30, "min": 10},
+                {"name": "AC", "type": "random", "max": 30, "min": 10},
+                {"name": "AD", "type": "random", "max": 30, "min": 10},
+                {"name": "BE", "type": "random", "max": 30, "min": 10},
+                {"name": "BG", "type": "random", "max": 30, "min": 10},
+                {"name": "CE", "type": "random", "max": 30, "min": 10},
+                {"name": "CF", "type": "random", "max": 30, "min": 10},
+                {"name": "DF", "type": "random", "max": 30, "min": 10},
+                {"name": "DI", "type": "random", "max": 30, "min": 10},
+                {"name": "EF", "type": "random", "max": 30, "min": 10},
+                {"name": "EG", "type": "random", "max": 30, "min": 10},
+                {"name": "EH", "type": "random", "max": 30, "min": 10},
+                {"name": "FH", "type": "random", "max": 30, "min": 10},
+                {"name": "FI", "type": "random", "max": 30, "min": 10},
+                {"name": "GJ", "type": "random", "max": 30, "min": 10},
+                {"name": "HI", "type": "random", "max": 30, "min": 10},
+                {"name": "HJ", "type": "random", "max": 30, "min": 10},
+                {"name": "IJ", "type": "random", "max": 30, "min": 10}
+            ],
+            "positions": [
+                [120, 110, "AB"],
+                [135, 162, "AC"],
+                [116, 227, "AD"],
+                [219, 109, "BE"],
+                [298, 58, "BG"],
+                [240, 145, "CE"],
+                [225, 205, "CF"],
+                [229, 237, "DF"],
+                [308, 277, "DI"],
+                [315, 186, "EF"],
+                [385, 110, "EG"],
+                [376, 146, "EH"],
+                [376, 210, "FH"],
+                [377, 237, "FI"],
+                [509, 110, "GJ"],
+                [450, 215, "HI"],
+                [500, 163, "HJ"],
+                [509, 232, "IJ"]
+            ],
+            "answer": [
+                {"calc": "function", "funcname": "Maths.dijkstra", "input": ["graph", "'A'", "'J'"], "output": ["a", "b"]},
+                {"calc": "answer", "type": "tuple", "output": ["a", "b"]}
+            ]
         }
     }
 }
