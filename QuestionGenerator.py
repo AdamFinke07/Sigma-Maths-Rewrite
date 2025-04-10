@@ -7,6 +7,7 @@ import math
 import json
 import matplotlib.pyplot as plt
 import numpy as np
+import sigfig as sf
 
 def question1(): 
     n1 = random.randint(1,6)
@@ -91,7 +92,7 @@ def question3():
     return a, b
 
 def generate_image(image, fontsize, *pos):
-    img = Image.open(f'Questions/{image}.png')
+    img = Image.open(f'{image}.png')
     imgfont = ImageFont.truetype('Fonts/OpenSans-Medium.ttf', fontsize)
     imgdraw = ImageDraw.Draw(img)
     for i in pos:
@@ -101,14 +102,12 @@ def generate_image(image, fontsize, *pos):
 
 def generate_question(question_id):
     # Load and parse questions.json
-    with open('Questions/questions.json') as f:
+    with open('Questions.json') as f:
         questions = json.load(f)['questions']
     
     # Find the question data
-    for category in questions:
-        if question_id in questions[category]:
-            question = questions[category][question_id]
-            break
+    if question_id in questions:
+        question = questions[question_id]
     else:
         raise ValueError(f"Question {question_id} not found")
 
@@ -116,18 +115,72 @@ def generate_question(question_id):
     variables = {}
     for var in question['variables']:
         if var['type'] == 'random':
-            variables[var['name']] = random.randint(var['min'], var['max'])
-    
+            # Handle expressions in min/max
+            min_val = var['min']
+            max_val = var['max']
+            
+            # If min/max is a string expression, evaluate it
+            if isinstance(min_val, str):
+                # Replace √ with math.sqrt
+                min_val = min_val.replace('√', 'math.sqrt')
+                min_val = eval(min_val, {'math': math, **variables})
+            if isinstance(max_val, str):
+                # Replace √ with math.sqrt
+                max_val = max_val.replace('√', 'math.sqrt')
+                max_val = eval(max_val, {'math': math, **variables})
+            
+            # Generate random value between min and max
+            if isinstance(min_val, (int, float)) and isinstance(max_val, (int, float)):
+                if isinstance(min_val, int) and isinstance(max_val, int):
+                    variables[var['name']] = random.randint(min_val, max_val)
+                else:
+                    variables[var['name']] = random.uniform(min_val, max_val)
+            else:
+                raise ValueError(f"Invalid min/max values for variable {var['name']}")
+                
+        elif var['type'] == 'randomaddition':
+            # Add a random number between 1 and 15 to n1
+            variables[var['name']] = variables['n1'] + random.randint(1, 15)
+
     # Calculate answer
     answer_steps = question['answer']
+    final_answer = None
+    
     for step in answer_steps:
         if step['calc'] == 'function':
             # Get function inputs
-            inputs = [variables[x] if x in variables else x for x in step['input']]
+            inputs = []
+            for x in step['input']:
+                if x in variables:
+                    inputs.append(variables[x])
+                elif isinstance(x, str) and any(c in x for c in ['+', '-', '*', '/']):
+                    # If it's an expression, evaluate it with math module available
+                    inputs.append(eval(x, {'math': math, **variables}))
+                else:
+                    inputs.append(x)
             
             # Call function
             if step['funcname'].startswith('Maths.'):
                 func = getattr(Maths, step['funcname'].split('.')[1])
+                # Special handling for dijkstra function
+                if step['funcname'] == 'Maths.dijkstra':
+                    # Create the graph from the variables
+                    graph = {}
+                    for node in ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J']:
+                        graph[node] = {}
+                        for neighbor in ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J']:
+                            edge = f"{node}{neighbor}"
+                            if edge in variables:
+                                graph[node][neighbor] = variables[edge]
+                    inputs = [graph, 'A', 'J']
+            elif step['funcname'] == 'round':
+                func = round
+            elif step['funcname'] == 'int':
+                func = int
+            elif step['funcname'] == 'math.log':
+                func = math.log
+            elif step['funcname'] == 'sf.round':
+                func = sf.round
             else:
                 func = globals()[step['funcname']]
             
@@ -140,10 +193,32 @@ def generate_question(question_id):
                 
         elif step['calc'] == 'answer':
             if step['type'] == 'fstring':
-                final_answer = step['output'].format(**variables)
+                # For Rcos answers, extract the numeric values
+                if 'R' in variables and 'a' in variables:
+                    final_answer = f"{variables['R']} {round(variables['a'], 3)}"
+                else:
+                    final_answer = step['output'].format(**variables)
+            elif step['type'] == 'tuple':
+                final_answer = tuple(str(variables[var]) for var in step['output'])
+            elif step['type'] == 'multiple':
+                # Handle multiple answers for answerbox questions
+                final_answer = {}
+                for box in question['answerbox']:
+                    label = box['label']
+                    answer_var = box['answer']
+                    value = variables[answer_var]
+                    if isinstance(value, float):
+                        final_answer[label] = f"{value:.3f}"
+                    else:
+                        final_answer[label] = str(value)
 
     # Generate image
-    img = Image.open(f"Questions/{question['image']}")
+    try:
+        img = Image.open(f'Questions/{question["image"]}')
+    except FileNotFoundError:
+        # If image not found in Questions folder, try root directory
+        img = Image.open(question['image'])
+        
     imgfont = ImageFont.truetype('Fonts/OpenSans-Medium.ttf', question['fontsize'])
     imgdraw = ImageDraw.Draw(img)
     
@@ -151,10 +226,19 @@ def generate_question(question_id):
     for pos in question['positions']:
         x, y, var = pos
         value = variables[var]
-        imgdraw.text((x, y), str(value), font=imgfont, fill=(0, 0, 0))
+        # Format the value appropriately for display
+        if isinstance(value, float):
+            # For floats, round to 3 decimal places
+            display_value = f"{value:.3f}"
+        else:
+            display_value = str(value)
+        imgdraw.text((x, y), display_value, font=imgfont, fill=(0, 0, 0))
     
-    img.show()
+    # Save the image but don't show it
     img.save('edited.png')
+    
+    if final_answer is None:
+        raise ValueError("No answer was generated for the question")
     
     return final_answer
 

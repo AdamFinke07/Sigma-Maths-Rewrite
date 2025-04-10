@@ -28,9 +28,9 @@ def surd(a):
         for i in factors:
             root = root * i
         if integer == 1:
-            return f'{sqrtsymbol}({root})'
+            return f'sqrt({root})'
         else:
-            return f'{int(integer)}{sqrtsymbol}({root})'
+            return f'{int(integer)}sqrt({root})'
 
         
 

@@ -2,6 +2,7 @@
     "questions": {
         "1": {
             "topic": "Trig",
+            "paper": "A-Level Pure",
             "image": "1.png",
             "fontsize": 15,
             "variables": [
@@ -12,19 +13,24 @@
                 [104, 6, "n1"],
                 [165, 6, "n2"]
             ],
+            "answerbox": [
+                {"label": "R=", "answer": "R", "marks": 1},
+                {"label": "a=", "answer": "a", "marks": 2}
+            ],
             "answer": [
                 {"calc": "function", "funcname": "Maths.Rcos", "input": ["n1", "n2"], "output": ["R", "a"]},
                 {"calc": "function", "funcname": "round", "input": ["a", 3], "output": ["a"]},
-                {"calc": "answer", "type": "fstring", "output": "{R}cos(x + {a})"}
+                {"calc": "answer", "type": "multiple", "output1": "R", "output2": "a"}
             ]
         },
         "2": {
             "topic": "Logarithm",
+            "paper": "A-Level Pure",
             "image": "2.png",
             "fontsize": 15,
             "variables": [
                 {"name": "n1", "type": "random", "max": 2020, "min": 2000},
-                {"name": "n2", "type": "random", "max": 15, "min": 1},
+                {"name": "n2", "type": "randomaddition", "max": 15, "min": 1, "addition": "n1"},
                 {"name": "n3", "type": "random", "max": 99, "min": 30},
                 {"name": "n4", "type": "random", "max": "n3-5", "min": 10},
                 {"name": "n5", "type": "random", "max": "n3-1", "min": "max(n3-n4+1,n4+1)"}
@@ -37,15 +43,22 @@
                 [464, 136, "n4"],
                 [310, 344, "n5"]
             ],
+
+            "answerbox": [
+                {"label": "a)", "answer": "a", "marks": 1},
+                {"label": "b)", "answer": "b", "marks": 4}
+            ],
+        
             "answer": [
                 {"calc": "function", "funcname": "int", "input": ["n3-n4"], "output": ["a"]},
                 {"calc": "function", "funcname": "math.log", "input": ["(n3-n5)/n4"], "output": ["log_result"]},
-                {"calc": "function", "funcname": "round", "input": ["log_result/(n2-n1)", "-int(math.floor(math.log10(abs(log_result/(n2-n1)))))+2"], "output": ["b"]},
-                {"calc": "answer", "type": "tuple", "output": ["a", "b"]}
+                {"calc": "function", "funcname": "sf.round", "input": ["log_result/(n2-n1)", 3], "output": ["b"]},
+                {"calc": "answer", "type": "multiple", "output1": "a", "output2": "b"}
             ]
         },
         "3": {
             "topic": "Graph",
+            "paper": "Decision",
             "image": "3.png",
             "fontsize": 15,
             "variables": [
@@ -88,9 +101,13 @@
                 [500, 163, "HJ"],
                 [509, 232, "IJ"]
             ],
+            "answerbox": [
+                {"label": "a)", "answer": "a", "marks": 1},
+                {"label": "b)", "answer": "b", "marks": 4}
+            ],
             "answer": [
                 {"calc": "function", "funcname": "Maths.dijkstra", "input": ["graph", "'A'", "'J'"], "output": ["a", "b"]},
-                {"calc": "answer", "type": "tuple", "output": ["a", "b"]}
+                {"calc": "answer", "type": "multiple", "output1": "a", "output2": "b"}
             ]
         }
     }

@@ -20,6 +20,21 @@ class Database:
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
             """)
+            
+            # Create marks table to store exam results
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS marks (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id INTEGER NOT NULL,
+                    paper TEXT NOT NULL,
+                    question_id TEXT NOT NULL,
+                    marks_earned INTEGER NOT NULL,
+                    total_marks INTEGER NOT NULL,
+                    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (user_id) REFERENCES users(id),
+                    UNIQUE(user_id, paper, question_id)
+                )
+            """)
             conn.commit()
 
     def hash_password(self, password):
@@ -72,5 +87,137 @@ class Database:
         except Exception as e:
             print(f"Error checking username: {e}")
             return False
+
+    def add_marks(self, username, paper, question_id, marks_earned, total_marks):
+        """Add or update marks for a user's question"""
+        try:
+            with sqlite3.connect(self.db_file) as conn:
+                cursor = conn.cursor()
+                # Get user_id
+                cursor.execute("SELECT id FROM users WHERE username = ?", (username,))
+                user_id = cursor.fetchone()[0]
+                
+                # Insert or update marks
+                cursor.execute("""
+                    INSERT INTO marks (user_id, paper, question_id, marks_earned, total_marks)
+                    VALUES (?, ?, ?, ?, ?)
+                    ON CONFLICT(user_id, paper, question_id) 
+                    DO UPDATE SET marks_earned = excluded.marks_earned
+                """, (user_id, paper, question_id, marks_earned, total_marks))
+                conn.commit()
+                return True
+        except Exception as e:
+            print(f"Error adding marks: {e}")
+            return False
+
+    def get_user_marks(self, username, paper=None):
+        """Get all marks for a user, optionally filtered by paper"""
+        try:
+            with sqlite3.connect(self.db_file) as conn:
+                cursor = conn.cursor()
+                # Get user_id
+                cursor.execute("SELECT id FROM users WHERE username = ?", (username,))
+                user_id = cursor.fetchone()[0]
+                
+                if paper:
+                    cursor.execute("""
+                        SELECT paper, question_id, marks_earned, total_marks, timestamp
+                        FROM marks
+                        WHERE user_id = ? AND paper = ?
+                        ORDER BY timestamp DESC
+                    """, (user_id, paper))
+                else:
+                    cursor.execute("""
+                        SELECT paper, question_id, marks_earned, total_marks, timestamp
+                        FROM marks
+                        WHERE user_id = ?
+                        ORDER BY timestamp DESC
+                    """, (user_id,))
+                
+                return cursor.fetchall()
+        except Exception as e:
+            print(f"Error getting marks: {e}")
+            return []
+
+    def get_paper_summary(self, username, paper):
+        """Get summary statistics for a specific paper"""
+        try:
+            with sqlite3.connect(self.db_file) as conn:
+                cursor = conn.cursor()
+                # Get user_id
+                cursor.execute("SELECT id FROM users WHERE username = ?", (username,))
+                user_id = cursor.fetchone()[0]
+                
+                cursor.execute("""
+                    SELECT 
+                        SUM(marks_earned) as total_earned,
+                        SUM(total_marks) as total_possible,
+                        COUNT(*) as question_count
+                    FROM marks
+                    WHERE user_id = ? AND paper = ?
+                """, (user_id, paper))
+                
+                result = cursor.fetchone()
+                if result:
+                    return {
+                        'total_earned': result[0] or 0,
+                        'total_possible': result[1] or 0,
+                        'question_count': result[2] or 0
+                    }
+                return {'total_earned': 0, 'total_possible': 0, 'question_count': 0}
+        except Exception as e:
+            print(f"Error getting paper summary: {e}")
+            return {'total_earned': 0, 'total_possible': 0, 'question_count': 0}
+
+    def get_all_users_marks(self, paper=None):
+        """Get marks for all users, optionally filtered by paper"""
+        try:
+            with sqlite3.connect(self.db_file) as conn:
+                cursor = conn.cursor()
+                
+                if paper:
+                    cursor.execute("""
+                        SELECT u.username, m.paper, m.question_id, m.marks_earned, m.total_marks, m.timestamp
+                        FROM marks m
+                        JOIN users u ON m.user_id = u.id
+                        WHERE m.paper = ?
+                        ORDER BY m.timestamp DESC
+                    """, (paper,))
+                else:
+                    cursor.execute("""
+                        SELECT u.username, m.paper, m.question_id, m.marks_earned, m.total_marks, m.timestamp
+                        FROM marks m
+                        JOIN users u ON m.user_id = u.id
+                        ORDER BY m.timestamp DESC
+                    """)
+                
+                return cursor.fetchall()
+        except Exception as e:
+            print(f"Error getting all users' marks: {e}")
+            return []
+
+    def get_all_users_summary(self):
+        """Get summary statistics for all users"""
+        try:
+            with sqlite3.connect(self.db_file) as conn:
+                cursor = conn.cursor()
+                
+                cursor.execute("""
+                    SELECT 
+                        u.username,
+                        m.paper,
+                        SUM(m.marks_earned) as total_earned,
+                        SUM(m.total_marks) as total_possible,
+                        COUNT(*) as question_count
+                    FROM marks m
+                    JOIN users u ON m.user_id = u.id
+                    GROUP BY u.username, m.paper
+                    ORDER BY u.username, m.paper
+                """)
+                
+                return cursor.fetchall()
+        except Exception as e:
+            print(f"Error getting all users summary: {e}")
+            return []
 
 
