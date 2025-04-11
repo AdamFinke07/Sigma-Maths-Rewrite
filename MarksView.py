@@ -38,35 +38,53 @@ class MarksViewWindow(QMainWindow, Ui_MarksView):
             
         # Set up table headers
         if selected_paper == "All Papers":
-            self.TWMarks.setColumnCount(5)
-            self.TWMarks.setHorizontalHeaderLabels(["Username", "Paper", "Total Marks", "Possible Marks", "Percentage"])
+            self.TWMarks.setColumnCount(6)
+            self.TWMarks.setHorizontalHeaderLabels([
+                "Username", 
+                "Paper", 
+                "Total Marks", 
+                "Possible Marks", 
+                "Percentage",
+                "Average Time"
+            ])
         else:
-            self.TWMarks.setColumnCount(5)
-            self.TWMarks.setHorizontalHeaderLabels(["Username", "Question", "Marks Earned", "Total Marks", "Percentage"])
+            self.TWMarks.setColumnCount(7)
+            self.TWMarks.setHorizontalHeaderLabels([
+                "Username", 
+                "Question", 
+                "Marks Earned", 
+                "Total Marks", 
+                "Percentage",
+                "Time Taken",
+                "Attempts"
+            ])
             
         # Add data to table
         for row, mark in enumerate(marks):
             self.TWMarks.insertRow(row)
             
             if selected_paper == "All Papers":
-                username, paper, earned, total, count = mark
+                username, paper, earned, total, count, avg_time = mark
                 percentage = round((earned/total)*100, 1) if total > 0 else 0
                 items = [
                     QTableWidgetItem(username),
                     QTableWidgetItem(paper),
                     QTableWidgetItem(str(earned)),
                     QTableWidgetItem(str(total)),
-                    QTableWidgetItem(f"{percentage}%")
+                    QTableWidgetItem(f"{percentage}%"),
+                    QTableWidgetItem(f"{avg_time:.1f}s")
                 ]
             else:
-                username, paper, question, earned, total, timestamp = mark
+                username, paper, question, earned, total, time_taken, attempts = mark
                 percentage = round((earned/total)*100, 1) if total > 0 else 0
                 items = [
                     QTableWidgetItem(username),
                     QTableWidgetItem(question),
                     QTableWidgetItem(str(earned)),
                     QTableWidgetItem(str(total)),
-                    QTableWidgetItem(f"{percentage}%")
+                    QTableWidgetItem(f"{percentage}%"),
+                    QTableWidgetItem(f"{time_taken:.1f}s"),
+                    QTableWidgetItem(str(attempts))
                 ]
                 
             for col, item in enumerate(items):

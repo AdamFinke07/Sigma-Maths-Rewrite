@@ -46,7 +46,7 @@
      <string>Practice</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="PBSpeedrun">
+   <widget class="QPushButton" name="PBViewMarks">
     <property name="geometry">
      <rect>
       <x>410</x>
@@ -56,7 +56,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>Speedrun</string>
+     <string>View Marks</string>
     </property>
    </widget>
    <widget class="QPushButton" name="PBExamMode">

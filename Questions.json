@@ -79,7 +79,19 @@
                 {"name": "GJ", "type": "random", "max": 30, "min": 10},
                 {"name": "HI", "type": "random", "max": 30, "min": 10},
                 {"name": "HJ", "type": "random", "max": 30, "min": 10},
-                {"name": "IJ", "type": "random", "max": 30, "min": 10}
+                {"name": "IJ", "type": "random", "max": 30, "min": 10},
+                {"name": "graph", "type": "graph", "graph": {
+                    "A": {"B": "AB", "C": "AC", "D": "AD"},
+                    "B": {"A": "AB", "E": "BE", "G": "BG"},
+                    "C": {"A": "AC", "E": "CE", "F": "CF"},
+                    "D": {"A": "AD", "F": "DF", "I": "DI"},
+                    "E": {"B": "BE", "C": "CE", "F": "EF", "G": "EG", "H": "EH"},
+                    "F": {"C": "CF", "D": "DF", "E": "EF", "H": "FH", "I": "FI"},
+                    "G": {"B": "BG", "E": "EG", "J": "GJ"},
+                    "H": {"E": "EH", "F": "FH", "I": "HI", "J": "HJ"},
+                    "I": {"D": "DI", "F": "FI", "H": "HI", "J": "IJ"},
+                    "J": {"G": "GJ", "H": "HJ", "I": "IJ"}
+                }}
             ],
             "positions": [
                 [120, 110, "AB"],

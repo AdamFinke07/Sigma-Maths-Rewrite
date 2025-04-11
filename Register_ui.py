@@ -16,7 +16,7 @@ class Ui_Form(object):
         self.Logo = QtWidgets.QLabel(parent=Form)
         self.Logo.setGeometry(QtCore.QRect(50, 10, 301, 101))
         self.Logo.setText("")
-        self.Logo.setPixmap(QtGui.QPixmap("d:\\Storage\\Desktop\\OneDrive_2025-02-28\\NEA Sigma\\logo.png"))
+        self.Logo.setPixmap(QtGui.QPixmap("Assets/Logos/logo.png"))
         self.Logo.setScaledContents(True)
         self.Logo.setObjectName("Logo")
         self.LUsername = QtWidgets.QLabel(parent=Form)
