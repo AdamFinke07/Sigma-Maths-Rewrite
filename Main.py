@@ -5,6 +5,7 @@ from Login import LoginScreen
 from Settings import SettingsWindow
 from ExamMode import ExamMode
 from Statistics import StatisticsWindow
+from PracticeMode import PracticeMode
 
 class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self, username):
@@ -18,6 +19,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.PBSettings.clicked.connect(self.settings)
         self.PBExamMode.clicked.connect(self.exam_mode)
         self.PBStatistics.clicked.connect(self.show_statistics)
+        self.PBPractice.clicked.connect(self.practice_mode)
 
     def quit_application(self):
         QApplication.quit()
@@ -35,6 +37,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.show()  # Show the main window again
         elif result == 'closed':
             self.show()  # Show the main window if exam mode was closed
+
+    def practice_mode(self):
+        self.hide()  # Hide the main window instead of closing it
+        self.practice_window = PracticeMode(self.username)
+        result = self.practice_window.run()
+        
+        if result == 'back_to_main':
+            self.show()  # Show the main window again
+        elif result == 'closed':
+            self.show()  # Show the main window if practice mode was closed
             
     def show_statistics(self):
         self.statistics_window = StatisticsWindow(self.username)
