@@ -121,6 +121,43 @@
                 {"calc": "function", "funcname": "Maths.dijkstra", "input": ["graph", "'A'", "'J'"], "output": ["a", "b"]},
                 {"calc": "answer", "type": "multiple", "output1": "a", "output2": "b"}
             ]
+        },
+        "4": {
+            "topic": "Integration",
+            "paper": "A-Level Pure",
+            "image": "4.png",
+            "fontsize": 15,
+            "variables": [
+                {"name": "a", "type": "random", "max": -1, "min": -10},
+                {"name": "b", "type": "random", "max": 20, "min": 10},
+                {"name": "c", "type": "random", "max": 20, "min": 10},
+                {"name": "coefficients", "type": "list", "variables": ["a", "b", "c"]},
+                {"name": "equation", "type": "fstring", "input":[["variable", "a"], ["string", "x^2 + "], ["variable", "b"], ["string", "x + "], ["variable", "c"]]}
+            ],
+            "positions": [
+                [376, 49, "equation"]
+            ],
+            "graph": {
+                "coefficients": [["a", "b", "c"], ["q"]],
+                "x_range": ["roots[0] - 1", "roots[-1] + 1"],
+                "y_range": ["-3", "q + 5"],
+                "shaded_region": [["a", "b", "c"], ["q"], "green", ["x", 0, "-p"]],
+                "position": [169, 297, 425, 325]
+            },
+            "answerbox": [
+                {"label": "a) a =", "answer": "d", "marks": 1},
+                {"label": "b =", "answer": "p", "marks": 1},
+                {"label": "c =", "answer": "q", "marks": 1},
+                {"label": "b)", "answer": "vertex", "marks": 2},
+                {"label": "c)", "answer": "integral", "marks": 5}
+            ],
+            "answer": [
+                {"calc": "function", "funcname": "Maths.complete_square", "input": ["a", "b", "c"], "output": ["d", "p", "q"]},
+                {"calc": "function", "funcname": "Maths.roots", "input": "coefficients", "output": ["roots"]},
+                {"calc": "function", "funcname": "Maths.integrate", "input": ["[a, b, c]", "0", "p"], "output": ["integral"]},
+                {"calc": "answer", "type": "fstring", "input": [["string", "("], ["variable", "p"], ["string", ", -"], ["variable", "q"], ["string", ")"]], "output": ["vertex"]},
+                {"calc": "answer", "type": "multiple", "output1": "d", "output2": "p", "output3": "q", "output4": "vertex", "output5": "integral"}
+            ]
         }
     }
 }

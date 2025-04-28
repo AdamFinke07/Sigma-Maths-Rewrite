@@ -46,7 +46,7 @@
      <string>Practice</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="PBViewMarks">
+   <widget class="QPushButton" name="PBStatistics">
     <property name="geometry">
      <rect>
       <x>410</x>
@@ -56,33 +56,20 @@
      </rect>
     </property>
     <property name="text">
-     <string>View Marks</string>
+     <string>Statistics</string>
     </property>
    </widget>
    <widget class="QPushButton" name="PBExamMode">
     <property name="geometry">
      <rect>
-      <x>410</x>
+      <x>30</x>
       <y>460</y>
-      <width>351</width>
+      <width>731</width>
       <height>121</height>
      </rect>
     </property>
     <property name="text">
      <string>Exam Mode</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="PBStatistics">
-    <property name="geometry">
-     <rect>
-      <x>30</x>
-      <y>460</y>
-      <width>341</width>
-      <height>121</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Statistics</string>
     </property>
    </widget>
    <widget class="QPushButton" name="PBSettings">

@@ -1,24 +1,30 @@
 import FreeSimpleGUI as sg
 import json
 import time
-from QuestionGenerator import generate_question
+from QuestionGenerator import generate_question, edited_image_buffer
 from Database import Database
+from PIL import Image, ImageTk
+import tkinter as tk
+from tkinter import ttk
+import os
+import io
+import random
 
 # Set dark theme colors
 sg.theme('DarkBlue3')
 
 class ExamMode:
     def __init__(self, username):
-        # Load questions from JSON
-        with open('Questions.json') as f:
-            self.questions_data = json.load(f)['questions']
-        
         self.username = username
         self.db = Database()
         
+        # Load questions
+        with open('Questions.json') as f:
+            self.questions = json.load(f)['questions']
+        
         # Get unique paper types
         paper_types = set()
-        for q_id, q_data in self.questions_data.items():
+        for q_id, q_data in self.questions.items():
             paper_types.add(q_data['paper'])
         
         # Define the layout with dark theme
@@ -39,7 +45,55 @@ class ExamMode:
         # Create the window
         self.window = sg.Window('Exam Paper Selector', layout, size=(401, 400), element_justification='center', background_color='#1E1E1E', finalize=True)
     
-    def show_question(self, question_id, question_data, correct_answer):
+    def generate_question(self):
+        # Clear previous answer boxes
+        for widget in self.answer_frame_boxes.winfo_children():
+            widget.destroy()
+        self.answer_boxes = {}
+        
+        # Generate question
+        question_id = self.question_var.get()
+        if not question_id:
+            return
+            
+        answers = generate_question(question_id)
+        
+        # Create answer boxes
+        for i, (label, answer) in enumerate(answers.items()):
+            frame = ttk.Frame(self.answer_frame_boxes)
+            frame.pack(side=tk.LEFT, padx=5)
+            
+            ttk.Label(frame, text=label).pack(side=tk.LEFT)
+            entry = ttk.Entry(frame, width=10)
+            entry.pack(side=tk.LEFT)
+            self.answer_boxes[label] = (entry, answer)
+        
+        # Display question image
+        if edited_image_buffer is not None:
+            # Clear previous image
+            if self.image_reference:
+                self.canvas.delete(self.image_reference)
+            
+            # Load image from buffer
+            img = Image.open(edited_image_buffer)
+            photo = ImageTk.PhotoImage(img)
+            
+            # Store reference to prevent garbage collection
+            self.image_reference = self.canvas.create_image(0, 0, anchor=tk.NW, image=photo)
+            self.canvas.image = photo  # Keep a reference
+            
+            # Configure canvas scroll region
+            self.canvas.config(scrollregion=self.canvas.bbox(tk.ALL))
+            
+            # Add scrollbars
+            self.scrollbar_x = ttk.Scrollbar(self.question_frame, orient=tk.HORIZONTAL, command=self.canvas.xview)
+            self.scrollbar_x.pack(side=tk.BOTTOM, fill=tk.X)
+            self.scrollbar_y = ttk.Scrollbar(self.question_frame, orient=tk.VERTICAL, command=self.canvas.yview)
+            self.scrollbar_y.pack(side=tk.RIGHT, fill=tk.Y)
+            
+            self.canvas.config(xscrollcommand=self.scrollbar_x.set, yscrollcommand=self.scrollbar_y.set)
+
+    def show_question(self, question_num, question_id, question_data, correct_answer):
         # Start timing for this question
         question_start_time = time.time()
         
@@ -49,10 +103,36 @@ class ExamMode:
         else:
             total_marks = question_data.get('marks', 1)
         
+        # Generate the question and get the image buffer
+        answer, image_buffer = generate_question(question_id)
+        
+        # Load image to check dimensions
+        img = Image.open(image_buffer)
+        max_height = 600
+        
+        # Only scale down if image is too tall
+        if img.height > max_height:
+            # Calculate new width while maintaining aspect ratio
+            width_percent = (max_height / float(img.height))
+            new_width = int((float(img.width) * float(width_percent)))
+            # Resize image
+            img = img.resize((new_width, max_height), Image.Resampling.LANCZOS)
+            # Convert back to bytes
+            img_byte_arr = io.BytesIO()
+            img.save(img_byte_arr, format='PNG')
+            img_byte_arr = img_byte_arr.getvalue()
+        else:
+            img_byte_arr = image_buffer.getvalue()
+        
+        # Save the original image temporarily
+        temp_img_path = os.path.join(os.getenv('TEMP'), f'question_{question_id}.png')
+        with open(temp_img_path, 'wb') as f:
+            f.write(image_buffer.getvalue())
+        
         # Create layout for question window
         layout = [
-            [sg.Text(f'Question {question_id}', font=('Segoe UI', 16), text_color='white', background_color='#1E1E1E')],
-            [sg.Image(filename='edited.png', key='-IMAGE-')],
+            [sg.Text(f'Question {question_num}', font=('Segoe UI', 16), text_color='white', background_color='#1E1E1E')],
+            [sg.Image(data=img_byte_arr, key='-IMAGE-', background_color='#1e1e1e', enable_events=True)],
         ]
 
         # Check if question has answerbox
@@ -65,12 +145,26 @@ class ExamMode:
                     answer_var = box['answer']
                     if isinstance(correct_answer, tuple):
                         # If answer is a tuple, use the corresponding index
-                        index = int(label.strip(')')) - 1
-                        correct_answer_dict[label] = str(correct_answer[index])
+                        # Only try to extract index if label is in format "(number)"
+                        if label.startswith('(') and label.endswith(')'):
+                            try:
+                                index = int(label.strip('()')) - 1
+                                if 0 <= index < len(correct_answer):
+                                    correct_answer_dict[label] = str(correct_answer[index])
+                                else:
+                                    correct_answer_dict[label] = str(correct_answer[0])
+                            except (ValueError, IndexError):
+                                correct_answer_dict[label] = str(correct_answer[0])
+                        else:
+                            # For non-numeric labels, use the first answer
+                            correct_answer_dict[label] = str(correct_answer[0])
                     else:
                         # If answer is a single value, use it for all boxes
                         correct_answer_dict[label] = str(correct_answer)
                 correct_answer = correct_answer_dict
+            else:
+                # If it's already a dictionary, ensure all values are strings
+                correct_answer = {k: str(v) for k, v in correct_answer.items()}
 
             # Add input fields for each answer box
             for box in question_data['answerbox']:
@@ -91,8 +185,10 @@ class ExamMode:
             [sg.Text('', key='-RESULT-', text_color='white', font=('Segoe UI', 12), background_color='#1E1E1E')]
         ])
         
-        # Create the window with larger size
-        question_window = sg.Window('Question', layout, size=(1200, 800), element_justification='center', background_color='#1E1E1E', finalize=True)
+        # Create the window with larger size and maximize it
+        question_window = sg.Window('Question', layout, size=(1200, 800), element_justification='center', 
+                                  background_color='#1E1E1E', finalize=True, resizable=True)
+        question_window.maximize()
         
         # Force the window to be on top
         question_window.bring_to_front()
@@ -123,7 +219,7 @@ class ExamMode:
                     for label, user_answer in user_answers.items():
                         # Clean up the answers for comparison
                         user_ans = user_answer.strip()
-                        correct_ans = str(correct_answer[label]).strip()
+                        correct_ans = correct_answer[label].strip()
                         
                         # Try to convert to float for numerical comparison
                         try:
@@ -238,7 +334,16 @@ class ExamMode:
             
             if event == 'Next':
                 question_window.close()
+                # Clean up temporary image file
+                try:
+                    os.remove(temp_img_path)
+                except:
+                    pass
                 return True, marks_earned
+            
+            if event == '-IMAGE-':
+                # Open image in Windows Photo Viewer
+                os.startfile(temp_img_path)
 
     def show_summary(self, total_marks, total_possible_marks, question_marks, paper):
         # Prevent division by zero
@@ -249,15 +354,16 @@ class ExamMode:
             
         # Create a table of marks per question
         marks_table = []
-        for q_id, marks in question_marks.items():
-            marks_table.append([f'Question {q_id}', f'{marks} marks'])
+        for i, (q_id, marks) in enumerate(question_marks.items(), 1):
+            topic = self.questions[q_id]['topic']
+            marks_table.append([f'Question {i}', topic, f'{marks} marks'])
             
         summary_layout = [
             [sg.Text('Exam Complete!', font=('Segoe UI', 20), text_color='white', background_color='#1E1E1E')],
             [sg.Text(f'Total Marks: {total_marks}/{total_possible_marks}', font=('Segoe UI', 16), text_color='white', background_color='#1E1E1E')],
             [sg.Text(f'Percentage: {percentage}%', font=('Segoe UI', 16), text_color='white', background_color='#1E1E1E')],
             [sg.Text('Marks per Question:', font=('Segoe UI', 16), text_color='white', background_color='#1E1E1E')],
-            [sg.Table(values=marks_table, headings=['Question', 'Marks'], 
+            [sg.Table(values=marks_table, headings=['Question', 'Topic', 'Marks'], 
                      auto_size_columns=True, justification='center',
                      font=('Segoe UI', 12), text_color='white', background_color='#1E1E1E',
                      header_font=('Segoe UI', 12, 'bold'), header_text_color='white',
@@ -323,16 +429,17 @@ class ExamMode:
                     total_possible_marks = 0
                     question_marks = {}
                     
-                    # Get questions for selected paper
-                    paper_questions = {q_id: q_data for q_id, q_data in self.questions_data.items() 
-                                     if q_data['paper'] == selected_paper}
+                    # Get questions for selected paper and randomize order
+                    paper_questions = [(q_id, q_data) for q_id, q_data in self.questions.items() 
+                                     if q_data['paper'] == selected_paper]
+                    random.shuffle(paper_questions)
                     
-                    for question_id, question_data in paper_questions.items():
+                    for question_num, (question_id, question_data) in enumerate(paper_questions, 1):
                         # Generate question and get correct answer
-                        correct_answer = generate_question(question_id)
+                        correct_answer, _ = generate_question(question_id)
                         
                         # Show question and get result
-                        continue_exam, marks = self.show_question(question_id, question_data, correct_answer)
+                        continue_exam, marks = self.show_question(question_num, question_id, question_data, correct_answer)
                         
                         if not continue_exam:
                             self.window.close()
@@ -357,7 +464,7 @@ class ExamMode:
         return None
 
 if __name__ == "__main__":
-    app = ExamMode()
+    app = ExamMode("test_user")
     selected_paper = app.run()
     if selected_paper:
         print(f"Selected paper: {selected_paper}")

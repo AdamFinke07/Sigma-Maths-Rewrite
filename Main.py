@@ -4,7 +4,6 @@ from MainMenu_ui import Ui_MainWindow
 from Login import LoginScreen
 from Settings import SettingsWindow
 from ExamMode import ExamMode
-from MarksView import MarksViewWindow
 from Statistics import StatisticsWindow
 
 class MainWindow(QMainWindow, Ui_MainWindow):
@@ -18,7 +17,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.PBQuit.clicked.connect(self.quit_application)
         self.PBSettings.clicked.connect(self.settings)
         self.PBExamMode.clicked.connect(self.exam_mode)
-        self.PBViewMarks.clicked.connect(self.view_marks)
         self.PBStatistics.clicked.connect(self.show_statistics)
 
     def quit_application(self):
@@ -38,10 +36,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         elif result == 'closed':
             self.show()  # Show the main window if exam mode was closed
             
-    def view_marks(self):
-        self.marks_window = MarksViewWindow()
-        self.marks_window.show()
-
     def show_statistics(self):
         self.statistics_window = StatisticsWindow(self.username)
         self.statistics_window.show()
