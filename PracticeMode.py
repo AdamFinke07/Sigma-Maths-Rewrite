@@ -1,7 +1,8 @@
 import FreeSimpleGUI as sg
 import json
-import time
+import random
 from QuestionGenerator import generate_question
+from Database import Database
 import os
 import io
 from PIL import Image
@@ -12,82 +13,35 @@ sg.theme('DarkBlue3')
 class PracticeMode:
     def __init__(self, username):
         self.username = username
+        self.db = Database()
         
         # Load questions
         with open('Questions.json') as f:
             self.questions = json.load(f)['questions']
         
-        # Get unique paper types
-        paper_types = set()
-        for q_id, q_data in self.questions.items():
-            paper_types.add(q_data['paper'])
+        # Get unique topics
+        topics = {q_data['topic'] for q_data in self.questions.values()}
         
         # Define the layout with dark theme
         layout = [
-            [sg.Text('Select Exam Paper', font=('Segoe UI', 20), justification='center', size=(30, 1), text_color='white', background_color='#1E1E1E')],
+            [sg.Text('Select Topic', font=('Segoe UI', 20), justification='center', size=(30, 1), 
+                    text_color='white', background_color='#1E1E1E')],
         ]
         
-        # Add radio buttons for each paper type
-        for paper in sorted(paper_types):
-            layout.append([sg.Radio(paper, "PAPER", key=f'-{paper}-', font=('Segoe UI', 12), text_color='white', background_color='#1E1E1E')])
+        # Add radio buttons for each topic
+        for topic in sorted(topics):
+            layout.append([sg.Radio(topic, "TOPIC", key=f'-{topic}-', font=('Segoe UI', 12), 
+                                  text_color='white', background_color='#1E1E1E')])
         
         layout.extend([
-            [sg.Button('Select Paper', size=(15, 2), font=('Segoe UI', 12), button_color=('white', '#0078D7')),
+            [sg.Button('Start Practice', size=(15, 2), font=('Segoe UI', 12), button_color=('white', '#0078D7')),
              sg.Button('Back to Main Menu', size=(15, 2), font=('Segoe UI', 12), button_color=('white', '#0078D7'))],
             [sg.Text('', key='-ERROR-', text_color='#FF4444', font=('Segoe UI', 12), background_color='#1E1E1E')]
         ])
         
         # Create the window
-        self.window = sg.Window('Practice Mode - Paper Selector', layout, size=(401, 400), element_justification='center', background_color='#1E1E1E', finalize=True)
-
-    def show_topic_selection(self, selected_paper):
-        # Get unique topics for selected paper
-        topics = set()
-        for q_data in self.questions.values():
-            if q_data['paper'] == selected_paper:
-                topics.add(q_data['topic'])
-        
-        # Create topic selection layout
-        layout = [
-            [sg.Text(f'Select Topic for {selected_paper}', font=('Segoe UI', 20), justification='center', size=(30, 1), text_color='white', background_color='#1E1E1E')],
-        ]
-        
-        # Add radio buttons for each topic
-        for topic in sorted(topics):
-            layout.append([sg.Radio(topic, "TOPIC", key=f'-{topic}-', font=('Segoe UI', 12), text_color='white', background_color='#1E1E1E')])
-        
-        layout.extend([
-            [sg.Button('Start Practice', size=(15, 2), font=('Segoe UI', 12), button_color=('white', '#0078D7')),
-             sg.Button('Back', size=(15, 2), font=('Segoe UI', 12), button_color=('white', '#0078D7'))],
-            [sg.Text('', key='-ERROR-', text_color='#FF4444', font=('Segoe UI', 12), background_color='#1E1E1E')]
-        ])
-        
-        topic_window = sg.Window('Practice Mode - Topic Selector', layout, size=(401, 400), element_justification='center', background_color='#1E1E1E', finalize=True)
-        
-        while True:
-            event, values = topic_window.read()
-            
-            if event == sg.WIN_CLOSED:
-                topic_window.close()
-                return None
-            
-            if event == 'Back':
-                topic_window.close()
-                return 'back'
-            
-            if event == 'Start Practice':
-                # Find selected topic
-                selected_topic = None
-                for key, value in values.items():
-                    if key.startswith('-') and key.endswith('-') and value:
-                        selected_topic = key[1:-1]  # Remove the '-' characters
-                        break
-                
-                if selected_topic:
-                    topic_window.close()
-                    return selected_topic
-                else:
-                    topic_window['-ERROR-'].update('Please select a topic')
+        self.window = sg.Window('Topic Selector', layout, size=(401, 400), 
+                              element_justification='center', background_color='#1E1E1E', finalize=True)
 
     def show_question(self, question_num, question_id, question_data, correct_answer):
         # Generate the question and get the image buffer
@@ -168,15 +122,12 @@ class PracticeMode:
         ])
         
         # Create the window with larger size and maximize it
-        question_window = sg.Window('Practice Question', layout, size=(1200, 800), element_justification='center', 
+        question_window = sg.Window('Question', layout, size=(1200, 800), element_justification='center', 
                                   background_color='#1E1E1E', finalize=True, resizable=True)
         question_window.maximize()
         
         # Force the window to be on top
         question_window.bring_to_front()
-        
-        # Track if this is the first attempt
-        first_attempt = True
         
         # Main event loop
         while True:
@@ -222,20 +173,15 @@ class PracticeMode:
                             question_window[f'-ANSWER-{label}'].update(disabled=True)
                         question_window['Submit'].update(disabled=True)
                     else:
-                        if first_attempt:
-                            question_window['-RESULT-'].update('Incorrect. Try again.', text_color='#FF4444')
-                            first_attempt = False
-                        else:
-                            # Show correct answers and lock the boxes
-                            result_text = []
-                            for label, correct_ans in correct_answer.items():
-                                result_text.append(f'{label} Correct answer: {correct_ans}')
-                            question_window['-RESULT-'].update('\n'.join(result_text), text_color='#FF4444')
-                            # Lock the answer boxes
-                            for box in question_data['answerbox']:
-                                label = box['label']
-                                question_window[f'-ANSWER-{label}'].update(disabled=True)
-                            question_window['Submit'].update(disabled=True)
+                        result_text = []
+                        for label, correct_ans in correct_answer.items():
+                            result_text.append(f'{label} Correct answer: {correct_ans}')
+                        question_window['-RESULT-'].update('\n'.join(result_text), text_color='#FF4444')
+                        # Lock the answer boxes
+                        for box in question_data['answerbox']:
+                            label = box['label']
+                            question_window[f'-ANSWER-{label}'].update(disabled=True)
+                        question_window['Submit'].update(disabled=True)
                 else:
                     # Handle single answer
                     user_answer = values['-ANSWER-'].strip()
@@ -256,14 +202,9 @@ class PracticeMode:
                         question_window['-ANSWER-'].update(disabled=True)
                         question_window['Submit'].update(disabled=True)
                     else:
-                        if first_attempt:
-                            question_window['-RESULT-'].update('Incorrect. Try again.', text_color='#FF4444')
-                            first_attempt = False
-                        else:
-                            # Show correct answer and lock the box
-                            question_window['-RESULT-'].update(f'Correct answer: {correct_ans}', text_color='#FF4444')
-                            question_window['-ANSWER-'].update(disabled=True)
-                            question_window['Submit'].update(disabled=True)
+                        question_window['-RESULT-'].update(f'Correct answer: {correct_ans}', text_color='#FF4444')
+                        question_window['-ANSWER-'].update(disabled=True)
+                        question_window['Submit'].update(disabled=True)
             
             if event == 'Next':
                 question_window.close()
@@ -290,50 +231,33 @@ class PracticeMode:
                 self.window.close()
                 return 'back_to_main'
             
-            if event == 'Select Paper':
-                # Find selected paper
-                selected_paper = None
+            if event == 'Start Practice':
+                selected_topic = None
                 for key, value in values.items():
                     if key.startswith('-') and key.endswith('-') and value:
-                        selected_paper = key[1:-1]  # Remove the '-' characters
+                        selected_topic = key[1:-1]
                         break
                 
-                if selected_paper:
-                    # Show topic selection
-                    selected_topic = self.show_topic_selection(selected_paper)
+                if selected_topic:
+                    topic_questions = [(q_id, q_data) for q_id, q_data in self.questions.items() 
+                                     if q_data['topic'] == selected_topic]
+                    random.shuffle(topic_questions)
                     
-                    if selected_topic == 'back':
-                        continue
-                    elif selected_topic is None:
-                        self.window.close()
-                        return 'closed'
-                    
-                    # Get questions for selected paper and topic
-                    paper_topic_questions = [(q_id, q_data) for q_id, q_data in self.questions.items() 
-                                          if q_data['paper'] == selected_paper and q_data['topic'] == selected_topic]
-                    
-                    # Randomize question order
-                    import random
-                    random.shuffle(paper_topic_questions)
-                    
-                    for question_num, (question_id, question_data) in enumerate(paper_topic_questions, 1):
-                        # Generate question and get correct answer
+                    for question_num, (question_id, question_data) in enumerate(topic_questions, 1):
                         correct_answer, _ = generate_question(question_id)
-                        
-                        # Show question and get result
                         continue_practice = self.show_question(question_num, question_id, question_data, correct_answer)
                         
                         if not continue_practice:
                             self.window.close()
                             return 'closed'
                 else:
-                    self.window['-ERROR-'].update('Please select a paper')
+                    self.window['-ERROR-'].update('Please select a topic')
         
         self.window.close()
         return None
 
 if __name__ == "__main__":
     app = PracticeMode("test_user")
-    result = app.run()
-    if result:
-        print(f"Result: {result}") 
+    selected_topic = app.run()
+    if selected_topic:
+        print(f"Selected topic: {selected_topic}") 

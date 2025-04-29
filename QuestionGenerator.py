@@ -13,10 +13,9 @@ import io
 from enum import Enum
 from typing import Any, Union, List
 
-# Global buffer for the graph
+# Global buffers for graph and question images
 graph_buffer = None
-# Global buffer for the edited image
-edited_image_buffer = None
+question_buffer = None
 
 class VariableType(Enum):
     INTEGER = "integer"
@@ -49,21 +48,6 @@ class Variable:
     def is_numeric(self) -> bool:
         return self.type in (VariableType.INTEGER, VariableType.FLOAT)
 
-def question4():
-    a = random.randint(-10, -1)
-    b = random.randint(10, 20)
-    c = random.randint(10, 20)
-    d,p,q = Maths.complete_square(a,b,c)
-    roots = Maths.roots([a, b, c])
-    answer1a = d
-    answer1b = p
-    answer1c = q
-    answer2 = f'({p}, {-q})'
-    answer3 = (p * -q) - Maths.integrate([a, b, c], 0, p)
-    print(answer1a, answer1b, answer1c, answer2, answer3)
-    plot([a, b, c], [q], x_range=((roots[0] - 1), (roots[len(roots)-1] + 1)), y_range=(-3, (q + 5)), shaded_region=[[[int(a), b, c], [q]], 'green', ('x', 0, -p)])
-    generate_image(4, 15, (169, 297, 425, 325), (376, 49, f'{a}x² + {b}x + {c}'))
-    
 def plot(*coefficients, x_range=(-10, 10), y_range=None, points=1000, shaded_region=None):
     """
     Plot one or more polynomial functions given their coefficients.
@@ -145,7 +129,7 @@ def plot(*coefficients, x_range=(-10, 10), y_range=None, points=1000, shaded_reg
 
 def generate_image(question, variables):
     """Generate and save the question image."""
-    global edited_image_buffer
+    global question_buffer
     
     try:
         img = Image.open(f'Questions/{question["image"]}')
@@ -178,11 +162,11 @@ def generate_image(question, variables):
         img.paste(graph, (x, y))
     
     # Save the image to buffer
-    edited_image_buffer = io.BytesIO()
-    img.save(edited_image_buffer, format='PNG')
-    edited_image_buffer.seek(0)
+    question_buffer = io.BytesIO()
+    img.save(question_buffer, format='PNG')
+    question_buffer.seek(0)
     
-    return edited_image_buffer
+    return question_buffer
 
 def generate_question(question_id):
     """
@@ -363,15 +347,7 @@ def get_function(funcname):
 def call_function(func, inputs, output_vars, variables):
     """Call a function and store its results."""
     try:
-        # Special handling for Maths.roots
-        if func.__name__ == 'roots':
-            if len(inputs) != 1:
-                raise ValueError(f"Maths.roots expects exactly one list argument, got {len(inputs)}")
-            if not isinstance(inputs[0], list):
-                raise ValueError(f"Maths.roots expects a list argument, got {type(inputs[0])}")
-            results = func(inputs[0])
-        else:
-            results = func(*inputs)
+        results = func(*inputs)
             
         if not isinstance(results, tuple):
             results = (results,)

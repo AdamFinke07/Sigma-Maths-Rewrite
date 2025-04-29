@@ -1,7 +1,7 @@
 import FreeSimpleGUI as sg
 import json
 import time
-from QuestionGenerator import generate_question, edited_image_buffer
+from QuestionGenerator import generate_question, question_buffer
 from Database import Database
 from PIL import Image, ImageTk
 import tkinter as tk
@@ -17,15 +17,14 @@ class ExamMode:
     def __init__(self, username):
         self.username = username
         self.db = Database()
+        self.image_reference = None
         
         # Load questions
         with open('Questions.json') as f:
             self.questions = json.load(f)['questions']
         
         # Get unique paper types
-        paper_types = set()
-        for q_id, q_data in self.questions.items():
-            paper_types.add(q_data['paper'])
+        paper_types = {q_data['paper'] for q_data in self.questions.values()}
         
         # Define the layout with dark theme
         layout = [
@@ -45,54 +44,6 @@ class ExamMode:
         # Create the window
         self.window = sg.Window('Exam Paper Selector', layout, size=(401, 400), element_justification='center', background_color='#1E1E1E', finalize=True)
     
-    def generate_question(self):
-        # Clear previous answer boxes
-        for widget in self.answer_frame_boxes.winfo_children():
-            widget.destroy()
-        self.answer_boxes = {}
-        
-        # Generate question
-        question_id = self.question_var.get()
-        if not question_id:
-            return
-            
-        answers = generate_question(question_id)
-        
-        # Create answer boxes
-        for i, (label, answer) in enumerate(answers.items()):
-            frame = ttk.Frame(self.answer_frame_boxes)
-            frame.pack(side=tk.LEFT, padx=5)
-            
-            ttk.Label(frame, text=label).pack(side=tk.LEFT)
-            entry = ttk.Entry(frame, width=10)
-            entry.pack(side=tk.LEFT)
-            self.answer_boxes[label] = (entry, answer)
-        
-        # Display question image
-        if edited_image_buffer is not None:
-            # Clear previous image
-            if self.image_reference:
-                self.canvas.delete(self.image_reference)
-            
-            # Load image from buffer
-            img = Image.open(edited_image_buffer)
-            photo = ImageTk.PhotoImage(img)
-            
-            # Store reference to prevent garbage collection
-            self.image_reference = self.canvas.create_image(0, 0, anchor=tk.NW, image=photo)
-            self.canvas.image = photo  # Keep a reference
-            
-            # Configure canvas scroll region
-            self.canvas.config(scrollregion=self.canvas.bbox(tk.ALL))
-            
-            # Add scrollbars
-            self.scrollbar_x = ttk.Scrollbar(self.question_frame, orient=tk.HORIZONTAL, command=self.canvas.xview)
-            self.scrollbar_x.pack(side=tk.BOTTOM, fill=tk.X)
-            self.scrollbar_y = ttk.Scrollbar(self.question_frame, orient=tk.VERTICAL, command=self.canvas.yview)
-            self.scrollbar_y.pack(side=tk.RIGHT, fill=tk.Y)
-            
-            self.canvas.config(xscrollcommand=self.scrollbar_x.set, yscrollcommand=self.scrollbar_y.set)
-
     def show_question(self, question_num, question_id, question_data, correct_answer):
         # Start timing for this question
         question_start_time = time.time()
