@@ -1,5 +1,5 @@
 from PyQt6.QtWidgets import QMainWindow, QGroupBox, QGridLayout, QLabel
-from Statistics_ui import Ui_StatisticsWindow
+from PtQt6UI import Ui_StatisticsWindow
 from Database import Database
 
 class StatisticsWindow(QMainWindow, Ui_StatisticsWindow):

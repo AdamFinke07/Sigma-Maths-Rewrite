@@ -1,11 +1,11 @@
 from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtWidgets import QApplication, QMainWindow
 import os
-from Register_ui import Ui_Form
+from PtQt6UI import Ui_Register
 import sqlite3
 from Database import Database
 
-class RegisterScreen(QtWidgets.QWidget, Ui_Form):
+class RegisterScreen(QtWidgets.QWidget, Ui_Register):
     def __init__(self, show_login_callback, parent=None):
         super().__init__(parent)
         self.setupUi(self)

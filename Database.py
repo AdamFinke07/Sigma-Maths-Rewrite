@@ -368,4 +368,64 @@ class Database:
             print(f"Error getting all users summary: {e}")
             return []
 
+    def update_password(self, username, new_password):
+        """Update a user's password"""
+        try:
+            with sqlite3.connect(self.db_file) as conn:
+                cursor = conn.cursor()
+                password_hash = self.hash_password(new_password)
+                cursor.execute(
+                    "UPDATE users SET password_hash = ? WHERE username = ?",
+                    (password_hash, username)
+                )
+                conn.commit()
+                return cursor.rowcount > 0
+        except Exception as e:
+            print(f"Error updating password: {e}")
+            return False
+
+    def update_username(self, old_username, new_username):
+        """Update a user's username"""
+        try:
+            with sqlite3.connect(self.db_file) as conn:
+                cursor = conn.cursor()
+                # Get user_id
+                cursor.execute("SELECT id FROM users WHERE username = ?", (old_username,))
+                user_id = cursor.fetchone()[0]
+                
+                # Update username
+                cursor.execute(
+                    "UPDATE users SET username = ? WHERE id = ?",
+                    (new_username, user_id)
+                )
+                conn.commit()
+                return cursor.rowcount > 0
+        except Exception as e:
+            print(f"Error updating username: {e}")
+            return False
+
+    def delete_user(self, username):
+        """Delete a user and all their associated data"""
+        try:
+            with sqlite3.connect(self.db_file) as conn:
+                cursor = conn.cursor()
+                # Get user_id
+                cursor.execute("SELECT id FROM users WHERE username = ?", (username,))
+                user_id = cursor.fetchone()[0]
+                
+                # Delete user's statistics
+                cursor.execute("DELETE FROM user_statistics WHERE user_id = ?", (user_id,))
+                
+                # Delete user's marks
+                cursor.execute("DELETE FROM marks WHERE user_id = ?", (user_id,))
+                
+                # Delete user
+                cursor.execute("DELETE FROM users WHERE id = ?", (user_id,))
+                
+                conn.commit()
+                return True
+        except Exception as e:
+            print(f"Error deleting user: {e}")
+            return False
+
 

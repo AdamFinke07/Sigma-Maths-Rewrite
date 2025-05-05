@@ -1,10 +1,11 @@
 from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtWidgets import QApplication, QMainWindow
 import os
-from Login_ui import Ui_Login
+from PtQt6UI import Ui_Login
 import sqlite3
 from Register import RegisterScreen
 from Database import Database
+import hashlib
 
 
 class LoginScreen(QtWidgets.QWidget, Ui_Login):

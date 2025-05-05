@@ -1,6 +1,6 @@
 from PyQt6.QtWidgets import QMainWindow, QTableWidgetItem, QMessageBox
 from PyQt6.QtCore import Qt
-from MarksView_ui import Ui_MarksView
+from PtQt6UI import Ui_MarksView
 from Database import Database
 
 class MarksViewWindow(QMainWindow, Ui_MarksView):

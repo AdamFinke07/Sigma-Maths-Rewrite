@@ -1,6 +1,8 @@
 from PyQt6.QtWidgets import QApplication, QMainWindow
+from PyQt6.QtCore import Qt
+import sys
 import os
-from MainMenu_ui import Ui_MainWindow
+from PtQt6UI import Ui_MainWindow
 from Login import LoginScreen
 from Settings import SettingsWindow
 from ExamMode import ExamMode
@@ -25,8 +27,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         QApplication.quit()
 
     def settings(self):
-        self.settings_window = SettingsWindow()
+        self.settings_window = SettingsWindow(self.username, self)
         self.settings_window.show()
+
+    def return_to_login(self):
+        self.close()
+        login_screen = LoginScreen(show_main_callback=show_main_window)
+        login_screen.show()
 
     def exam_mode(self):
         self.hide()  # Hide the main window instead of closing it
