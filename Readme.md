@@ -92,7 +92,7 @@ Unified UI management system:
 6. Statistics and performance are tracked and visualized
 
 ## Key Features
-- Dynamic question generation with LaTeX support
+- Dynamic question generation
 - Real-time answer validation
 - Comprehensive progress tracking
 - Realistic exam simulation
