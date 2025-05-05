@@ -1,7 +1,7 @@
-# Sigma Maths Documentation
+# Sigma Maths
 
 ## Overview
-This is a mathematics practice and exam system designed to help students prepare for A-Level mathematics exams. The system includes practice mode, exam mode, and tracks user statistics.
+This is a mathematics practice and exam system designed to help students prepare for A-Level mathematics exams. The system includes practice mode, exam mode, and comprehensive user statistics tracking.
 
 ## Core Files
 
@@ -12,13 +12,11 @@ This is a mathematics practice and exam system designed to help students prepare
 
 ### QuestionGenerator.py
 Core functionality for generating mathematical questions:
-- `VariableType`: Enum defining different types of variables (integer, float, string, list, graph)
-- `Variable`: Class representing a variable with name, value, and type
-- `plot`: Generates polynomial function plots with optional shaded regions
-- `generate_image`: Creates question images with text and graphs
-- `generate_question`: Main function that generates questions based on JSON configuration
-- `generate_variables`: Creates variables based on specifications
-- `calculate_answer`: Processes answer steps and calculates final answers
+- Dynamic question generation based on templates
+- Variable generation and management
+- Mathematical expression processing
+- Image and graph generation for questions
+- Answer validation and processing
 
 ### Maths.py
 Mathematical utility functions:
@@ -33,54 +31,73 @@ Mathematical utility functions:
 
 ### ExamMode.py
 Handles exam functionality:
-- `ExamMode`: Main class managing exam sessions
-  - `__init__`: Sets up exam paper selection interface
-  - `show_question`: Displays questions and handles user answers
-  - `show_summary`: Shows exam results and statistics
-  - `run`: Main exam loop
+- Timed exam sessions
+- Question presentation and answer collection
+- Score calculation and feedback
+- Progress tracking
+- Results summary and analysis
 
 ### PracticeMode.py
-Handles practice sessions:
-- `PracticeMode`: Main class managing practice sessions
-  - `__init__`: Sets up practice interface
-  - `show_question`: Displays practice questions
-  - `run`: Main practice loop
+Manages practice sessions:
+- Topic-specific practice
+- Instant feedback on answers
+- Detailed solution explanations
+- Progress tracking
+- Adaptive difficulty
 
 ### Database.py
-Manages user data and statistics:
-- `Database`: Class handling database operations
-  - User authentication
-  - Statistics tracking
-  - Marks storage
-  - User management
+Comprehensive data management system:
+- User authentication and session management
+- Statistics and performance tracking
+- Question history and marks storage
+- User preferences and settings
+- Progress analytics
 
-### UI Files
-- `MainMenu_ui.py`: Main menu interface
-- `Login_ui.py`: Login interface
-- `Register_ui.py`: Registration interface
-- `Statistics_ui.py`: Statistics display interface
-- `MarksView_ui.py`: Marks viewing interface
-- `Settings_ui.py`: Settings interface
+### PtQt6UI.py
+Unified UI management system:
+- Centralized UI component handling
+- Consistent styling across all windows
+- Dynamic form generation
+- Responsive layouts
+- Interactive elements for question display
+
+### Authentication Files
+- `Login.py`: Handles user login process
+- `Register.py`: Manages new user registration
+
+### Additional Components
+- `Statistics.py`: Detailed performance analytics and visualization
+- `Settings.py`: User preferences and application configuration
+- `MarksView.py`: Exam and practice session results viewer
 
 ### Configuration Files
 - `Questions.json`: Question templates and configurations
 - `requirements.txt`: Python package dependencies
 
+## Directory Structure
+- `Assets/`: Contains database files and UI resources
+- `Questions/`: Stores generated question images and resources
+- `Fonts/`: Custom fonts for UI rendering
+
 ## Data Flow
-1. User logs in through Login.py
-2. Main menu (MainMenu_ui.py) provides access to:
+1. User authentication through Login/Register system
+2. Main menu provides access to:
    - Practice Mode
    - Exam Mode
    - Statistics
    - Settings
-3. Questions are generated using QuestionGenerator.py
-4. User answers are processed and stored in Database.py
-5. Statistics are tracked and displayed through Statistics.py
+3. Questions are dynamically generated using QuestionGenerator.py
+4. User interactions are managed through PtQt6UI.py
+5. Data is persistently stored using Database.py
+6. Statistics and performance are tracked and visualized
 
 ## Key Features
-- Dynamic question generation
+- Dynamic question generation with LaTeX support
 - Real-time answer validation
-- Progress tracking
-- Exam simulation
-- Practice mode with instant feedback
-- Statistics and performance analysis 
+- Comprehensive progress tracking
+- Realistic exam simulation
+- Practice mode with detailed feedback
+- Advanced statistics and performance analysis
+- Modern, responsive UI
+- Secure user authentication
+- Persistent data storage 
